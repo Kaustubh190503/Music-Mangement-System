@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ playlist.name }} - Surtaal{% endblock %}
+
+{% block content %}
+<div class="playlist-header">
+    <div class="playlist-image">
+        <i class="fas fa-music fa-2x"></i>
+    </div>
+    <div class="playlist-details">
+        <h1>{{ playlist.name }}</h1>
+        <div class="playlist-meta">
+            Created by {{ playlist.owner.username }} • {{ playlist.tracks.count() }} tracks
+        </div>
+        <div class="playlist-actions">
+            {% if playlist_tracks %}
+            <button class="btn btn-primary" id="play-all-btn">
+                <i class="fas fa-play me-1"></i> Play All
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if playlist_tracks %}
+            <div class="list-group list-group-flush">
+                {% for playlist_track in playlist_tracks %}
+                <div class="track-item list-group-item d-flex align-items-center {% if playlist_track.track.is_premium %}premium{% endif %}" data-id="{{ playlist_track.track.id }}">
+                    <div class="track-number">{{ loop.index }}</div>
+                    <div class="track-info">
+                        <div class="track-title">{{ playlist_track.track.title }}</div>
+                        <div class="track-artist">{{ playlist_track.track.artist.name }}</div>
+                    </div>
+                    <div class="track-duration" data-duration="{{ playlist_track.track.duration }}">
+                        {{ (playlist_track.track.duration // 60)|int }}:{{ '%02d' % (playlist_track.track.duration % 60) }}
+                    </div>
+                    <div class="track-actions">
+                        <button class="btn btn-sm btn-link favorite-button" data-id="{{ playlist_track.track.id }}">
+                            {% if playlist_track.track in current_user.favorites.all() %}
+                            <i class="fas fa-heart"></i>
+                            {% else %}
+                            <i class="far fa-heart"></i>
+                            {% endif %}
+                        </button>
+                        
+                        <button class="btn btn-sm btn-link text-danger remove-from-playlist" 
+                                data-track-id="{{ playlist_track.track.id }}" 
+                                data-playlist-id="{{ playlist.id }}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">
+                    <i class="fas fa-music text-muted"></i>
+                </div>
+                <h3>This playlist is empty</h3>
+                <p class="text-muted">Add tracks to your playlist from the music player</p>
+                <a href="{{ url_for('player') }}" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus me-1"></i> Add Tracks
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/player.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Play all tracks in playlist
+        const playAllBtn = document.getElementById('play-all-btn');
+        if (playAllBtn) {
+            playAllBtn.addEventListener('click', function() {
+                const trackItems = document.querySelectorAll('.track-item');
+                const trackIds = Array.from(trackItems).map(el => parseInt(el.dataset.id));
+                
+                if (trackIds.length > 0 && window.player) {
+                    window.player.setPlaylist(trackIds, 0);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

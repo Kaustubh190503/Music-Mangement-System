@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results - Surtaal{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1>Search Results</h1>
+        {% if query %}
+        <p class="text-muted">Results for "{{ query }}"</p>
+        {% else %}
+        <p class="text-muted">Enter a search term to find music</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if query %}
+    {% if not tracks and not artists and not albums %}
+    <div class="alert alert-info">
+        No results found for "{{ query }}". Try a different search term.
+    </div>
+    {% endif %}
+    
+    {% if tracks %}
+    <section class="search-results-section">
+        <h2>Tracks</h2>
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for track in tracks %}
+                    <div class="track-item list-group-item d-flex align-items-center {% if track.is_premium %}premium{% endif %}" data-id="{{ track.id }}">
+                        <div class="track-number">{{ loop.index }}</div>
+                        <div class="track-info">
+                            <div class="track-title">{{ track.title }}</div>
+                            <div class="track-artist">{{ track.artist.name }}</div>
+                        </div>
+                        <div class="track-duration" data-duration="{{ track.duration }}">
+                            {{ (track.duration // 60)|int }}:{{ '%02d' % (track.duration % 60) }}
+                        </div>
+                        <div class="track-actions">
+                            <button class="btn btn-sm btn-link favorite-button" data-id="{{ track.id }}">
+                                {% if track in current_user.favorites.all() %}
+                                <i class="fas fa-heart"></i>
+                                {% else %}
+                                <i class="far fa-heart"></i>
+                                {% endif %}
+                            </button>
+                            
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-link add-to-playlist" data-id="{{ track.id }}">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <div class="playlist-dropdown dropdown-menu dropdown-menu-end" data-track="{{ track.id }}">
+                                    <h6 class="dropdown-header">Add to playlist</h6>
+                                    {% if current_user.playlists.all() %}
+                                        {% for playlist in current_user.playlists %}
+                                        <a class="dropdown-item playlist-dropdown-item" href="#" data-playlist="{{ playlist.id }}">
+                                            {{ playlist.name }}
+                                        </a>
+                                        {% endfor %}
+                                    {% else %}
+                                        <a class="dropdown-item disabled" href="#">No playlists available</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="{{ url_for('playlists') }}">Create Playlist</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+    
+    {% if artists %}
+    <section class="search-results-section">
+        <h2>Artists</h2>
+        <div class="row">
+            {% for artist in artists %}
+            <div class="col-md-4 col-lg-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="artist-image mx-auto mb-3" style="width: 100px; height: 100px;">
+                            <i class="fas fa-user fa-3x" style="line-height: 100px;"></i>
+                        </div>
+                        <h5 class="card-title">{{ artist.name }}</h5>
+                        <p>
+                            <a href="{{ url_for('view_artist', artist_id=artist.id) }}" class="btn btn-sm btn-primary">
+                                View Artist
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    
+    {% if albums %}
+    <section class="search-results-section">
+        <h2>Albums</h2>
+        <div class="row">
+            {% for album in albums %}
+            <div class="col-md-4 col-lg-3 mb-4">
+                <div class="card h-100">
+                    <div class="album-cover mx-auto mt-3" style="width: 150px; height: 150px;">
+                        <i class="fas fa-record-vinyl fa-3x" style="line-height: 150px; display: block; text-align: center;"></i>
+                    </div>
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ album.title }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">{{ album.artist.name }}</h6>
+                        <p>
+                            <a href="{{ url_for('view_album', album_id=album.id) }}" class="btn btn-sm btn-primary">
+                                View Album
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+{% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">
+                <i class="fas fa-search text-muted"></i>
+            </div>
+            <h3>Start Searching</h3>
+            <p class="text-muted">Enter a search term to find artists, albums, and tracks</p>
+            
+            <form class="d-flex w-75 mx-auto mt-4" action="{{ url_for('search') }}" method="get">
+                <input class="form-control me-2" type="search" name="query" placeholder="Artists, albums, or tracks..." aria-label="Search">
+                <button class="btn btn-primary" type="submit">Search</button>
+            </form>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/player.js') }}"></script>
+{% endblock %}

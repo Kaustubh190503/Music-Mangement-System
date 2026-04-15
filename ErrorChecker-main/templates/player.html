@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Music Player - Surtaal{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1>Music Player</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Tracks List -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title mb-0">All Tracks</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% if tracks %}
+                        {% for track in tracks %}
+                        <div class="track-item list-group-item d-flex align-items-center {% if track.is_premium %}premium{% endif %}" data-id="{{ track.id }}">
+                            <div class="track-number">{{ loop.index }}</div>
+                            <div class="track-info">
+                                <div class="track-title">{{ track.title }}</div>
+                                <div class="track-artist">{{ track.artist.name }}</div>
+                            </div>
+                            <div class="track-duration" data-duration="{{ track.duration }}">
+                                {{ (track.duration // 60)|int }}:{{ '%02d' % (track.duration % 60) }}
+                            </div>
+                            <div class="track-actions">
+                                <button class="btn btn-sm btn-link favorite-button" data-id="{{ track.id }}">
+                                    {% if track in current_user.favorites.all() %}
+                                    <i class="fas fa-heart"></i>
+                                    {% else %}
+                                    <i class="far fa-heart"></i>
+                                    {% endif %}
+                                </button>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-link add-to-playlist" data-id="{{ track.id }}">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                    <div class="playlist-dropdown dropdown-menu dropdown-menu-end" data-track="{{ track.id }}">
+                                        <h6 class="dropdown-header">Add to playlist</h6>
+                                        {% if current_user.playlists.all() %}
+                                            {% for playlist in current_user.playlists %}
+                                            <a class="dropdown-item playlist-dropdown-item" href="#" data-playlist="{{ playlist.id }}">
+                                                {{ playlist.name }}
+                                            </a>
+                                            {% endfor %}
+                                        {% else %}
+                                            <a class="dropdown-item disabled" href="#">No playlists available</a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" href="{{ url_for('playlists') }}">Create Playlist</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="list-group-item text-center py-5">
+                            <p class="mb-0">No tracks available</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title mb-0">Your Playlists</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% if current_user.playlists.all() %}
+                        {% for playlist in current_user.playlists %}
+                        <a href="{{ url_for('view_playlist', playlist_id=playlist.id) }}" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <div class="me-3" style="width: 40px; height: 40px; background-color: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-list text-muted"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ playlist.name }}</h6>
+                                <small class="text-muted">{{ playlist.tracks.count() }} tracks</small>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="list-group-item text-center py-4">
+                            <p class="text-muted mb-2">No playlists yet</p>
+                            <a href="{{ url_for('playlists') }}" class="btn btn-sm btn-primary">Create Playlist</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if not current_user.is_premium %}
+        <div class="card bg-dark border-warning">
+            <div class="card-body text-center p-4">
+                <h3 class="card-title">
+                    <i class="fas fa-crown text-warning me-2"></i>
+                    Upgrade to Premium
+                </h3>
+                <p>Unlock all premium tracks and enjoy an ad-free experience!</p>
+                <a href="{{ url_for('upgrade') }}" class="btn btn-warning">Upgrade Now</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block footer_player %}
+<div class="bg-dark text-light py-3 px-4 shadow-lg" id="audio-player">
+    <div class="container">
+        <div class="player-info mb-2">
+            <h5 id="track-title">Select a track to play</h5>
+            <p class="text-muted" id="track-artist">-</p>
+        </div>
+
+        <div class="progress-container mb-2" id="progress-container">
+            <div class="progress-bar bg-primary" id="progress" style="height: 5px;"></div>
+        </div>
+
+        <div class="d-flex justify-content-between mb-2">
+            <span id="current-time">0:00</span>
+            <span id="duration">0:00</span>
+        </div>
+
+        <div class="player-controls text-center">
+            <button class="btn btn-outline-secondary" id="prev-button">
+                <i class="fas fa-step-backward"></i>
+            </button>
+            <button class="btn btn-primary" id="play-button">
+                <i class="fas fa-play"></i>
+            </button>
+            <button class="btn btn-outline-secondary" id="next-button">
+                <i class="fas fa-step-forward"></i>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/player.js') }}"></script>
+{% endblock %}

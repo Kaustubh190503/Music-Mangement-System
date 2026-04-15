@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - Surtaal{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="profile-header text-center">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h1 class="mb-1">{{ current_user.username }}</h1>
+                    <p class="text-muted mb-3">
+                        {% if current_user.role == 'admin' %}
+                        <span class="badge bg-danger me-1">Admin</span>
+                        {% endif %}
+                        {% if current_user.is_premium %}
+                        <span class="badge bg-warning text-dark">Premium User</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Free User</span>
+                        {% endif %}
+                    </p>
+                    <p class="text-muted mb-0">Member since {{ current_user.created_at.strftime('%B %d, %Y') }}</p>
+                </div>
+                
+                <hr>
+                
+                <h2 class="mb-4">Edit Profile</h2>
+                
+                <form method="POST" action="{{ url_for('profile') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}" required>
+                    </div>
+                    
+                    <h3 class="h5 mt-4 mb-3">Change Password</h3>
+                    
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="current_password" name="current_password">
+                        <div class="form-text">Leave blank if you don't want to change your password</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password">
+                    </div>
+                    
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+                
+                {% if not current_user.is_premium %}
+                <div class="mt-5">
+                    <div class="card bg-dark border-warning">
+                        <div class="card-body text-center">
+                            <h3>
+                                <i class="fas fa-crown text-warning me-2"></i>
+                                Upgrade to Premium
+                            </h3>
+                            <p>Get access to all premium tracks and features!</p>
+                            <a href="{{ url_for('upgrade') }}" class="btn btn-warning">Upgrade Now</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <style>
+    .neon-blue {
+      fill: none;
+      stroke: #00c8ff;
+      stroke-width: 2;
+      filter: drop-shadow(0 0 4px #00c8ff);
+    }
+    .dark-bg {
+      fill: #121212;
+    }
+  </style>
+  
+  <circle class="dark-bg" cx="50" cy="50" r="45" />
+  
+  <!-- Headphone Band -->
+  <path class="neon-blue" d="M30 40C30 26.7 38.7 18 50 18C61.3 18 70 26.7 70 40" />
+  <path class="neon-blue" d="M30 40C30 26.7 38.7 18 50 18C61.3 18 70 26.7 70 40" stroke-linecap="round" />
+  
+  <!-- Left Earpiece -->
+  <path class="neon-blue" d="M22 60C22 54.5 26.5 50 32 50L32 70C26.5 70 22 65.5 22 60Z" />
+  
+  <!-- Right Earpiece -->
+  <path class="neon-blue" d="M78 60C78 54.5 73.5 50 68 50L68 70C73.5 70 78 65.5 78 60Z" />
+  
+  <!-- Sound Waves Left -->
+  <path class="neon-blue" d="M32 55H28" stroke-linecap="round" />
+  <path class="neon-blue" d="M32 60H26" stroke-linecap="round" />
+  <path class="neon-blue" d="M32 65H28" stroke-linecap="round" />
+  
+  <!-- Sound Waves Right -->
+  <path class="neon-blue" d="M68 55H72" stroke-linecap="round" />
+  <path class="neon-blue" d="M68 60H74" stroke-linecap="round" />
+  <path class="neon-blue" d="M68 65H72" stroke-linecap="round" />
+</svg>

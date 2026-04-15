@@ -1,0 +1,399 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Panel - Surtaal{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1>Admin Panel</h1>
+        <p class="text-muted">Manage your music catalog and users</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-3">
+        <div class="list-group mb-4">
+            <a href="#users" class="list-group-item list-group-item-action">Users</a>
+            <a href="#tracks" class="list-group-item list-group-item-action">Tracks</a>
+            <a href="#artists" class="list-group-item list-group-item-action">Artists</a>
+            <a href="#albums" class="list-group-item list-group-item-action">Albums</a>
+            <a href="#genres" class="list-group-item list-group-item-action">Genres</a>
+        </div>
+    </div>
+    
+    <div class="col-lg-9">
+        <!-- Users Section -->
+        <section id="users" class="admin-section">
+            <h3>Users</h3>
+            <div class="card mb-4">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Premium</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>
+                                    <span class="badge {% if user.role == 'admin' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                        {{ user.role }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if user.is_premium %}
+                                    <span class="badge bg-warning text-dark">Premium</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Free</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Tracks Section -->
+        <section id="tracks" class="admin-section">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3>Tracks</h3>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTrackModal">
+                    <i class="fas fa-plus me-1"></i> Add Track
+                </button>
+            </div>
+            <div class="card mb-4">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Artist</th>
+                                <th>Album</th>
+                                <th>Premium</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for track in tracks %}
+                            <tr>
+                                <td>{{ track.id }}</td>
+                                <td>{{ track.title }}</td>
+                                <td>{{ track.artist.name }}</td>
+                                <td>{{ track.album.title if track.album else '-' }}</td>
+                                <td>
+                                    {% if track.is_premium %}
+                                    <span class="badge bg-warning text-dark">Premium</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Free</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('delete_track', track_id=track.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-danger delete-confirm">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Artists Section -->
+        <section id="artists" class="admin-section">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3>Artists</h3>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addArtistModal">
+                    <i class="fas fa-plus me-1"></i> Add Artist
+                </button>
+            </div>
+            <div class="card mb-4">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Tracks</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for artist in artists %}
+                            <tr>
+                                <td>{{ artist.id }}</td>
+                                <td>{{ artist.name }}</td>
+                                <td>{{ artist.tracks.count() }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('delete_artist', artist_id=artist.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-danger delete-confirm">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Albums Section -->
+        <section id="albums" class="admin-section">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3>Albums</h3>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAlbumModal">
+                    <i class="fas fa-plus me-1"></i> Add Album
+                </button>
+            </div>
+            <div class="card mb-4">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Artist</th>
+                                <th>Tracks</th>
+                                <th>Release Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for album in albums %}
+                            <tr>
+                                <td>{{ album.id }}</td>
+                                <td>{{ album.title }}</td>
+                                <td>{{ album.artist.name }}</td>
+                                <td>{{ album.tracks.count() }}</td>
+                                <td>{{ album.release_date.strftime('%Y-%m-%d') if album.release_date else '-' }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('delete_album', album_id=album.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-danger delete-confirm">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Genres Section -->
+        <section id="genres" class="admin-section">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3>Genres</h3>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGenreModal">
+                    <i class="fas fa-plus me-1"></i> Add Genre
+                </button>
+            </div>
+            <div class="card mb-4">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Tracks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for genre in genres %}
+                            <tr>
+                                <td>{{ genre.id }}</td>
+                                <td>{{ genre.name }}</td>
+                                <td>{{ genre.tracks|length }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Add Artist Modal -->
+<div class="modal fade" id="addArtistModal" tabindex="-1" aria-labelledby="addArtistModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addArtistModalLabel">Add New Artist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_artist') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="artist-name" class="form-label">Artist Name</label>
+                        <input type="text" class="form-control" id="artist-name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="artist-bio" class="form-label">Bio</label>
+                        <textarea class="form-control" id="artist-bio" name="bio" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Artist</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Album Modal -->
+<div class="modal fade" id="addAlbumModal" tabindex="-1" aria-labelledby="addAlbumModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAlbumModalLabel">Add New Album</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_album') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="album-title" class="form-label">Album Title</label>
+                        <input type="text" class="form-control" id="album-title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="album-artist" class="form-label">Artist</label>
+                        <select class="form-select" id="album-artist" name="artist_id" required>
+                            <option value="">Select Artist</option>
+                            {% for artist in artists %}
+                            <option value="{{ artist.id }}">{{ artist.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="album-release-date" class="form-label">Release Date</label>
+                        <input type="date" class="form-control" id="album-release-date" name="release_date">
+                    </div>
+                    <div class="mb-3">
+                        <label for="album-cover-url" class="form-label">Cover URL</label>
+                        <input type="url" class="form-control" id="album-cover-url" name="cover_url">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Album</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Genre Modal -->
+<div class="modal fade" id="addGenreModal" tabindex="-1" aria-labelledby="addGenreModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addGenreModalLabel">Add New Genre</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_genre') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="genre-name" class="form-label">Genre Name</label>
+                        <input type="text" class="form-control" id="genre-name" name="name" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Genre</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Track Modal -->
+<div class="modal fade" id="addTrackModal" tabindex="-1" aria-labelledby="addTrackModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTrackModalLabel">Add New Track</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_track') }}" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="track-title" class="form-label">Track Title</label>
+                        <input type="text" class="form-control" id="track-title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="track-artist" class="form-label">Artist</label>
+                        <select class="form-select" id="track-artist" name="artist_id" required>
+                            <option value="">Select Artist</option>
+                            {% for artist in artists %}
+                            <option value="{{ artist.id }}">{{ artist.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="track-album" class="form-label">Album</label>
+                        <select class="form-select" id="track-album" name="album_id">
+                            <option value="">Select Album (Optional)</option>
+                            {% for album in albums %}
+                            <option value="{{ album.id }}">{{ album.title }} - {{ album.artist.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="track-genre" class="form-label">Genre</label>
+                        <select class="form-select" id="track-genre" name="genre_id">
+                            <option value="">Select Genre (Optional)</option>
+                            {% for genre in genres %}
+                            <option value="{{ genre.id }}">{{ genre.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="track-duration" class="form-label">Duration (seconds)</label>
+                        <input type="number" class="form-control" id="track-duration" name="duration" min="1">
+                    </div>
+                    <div class="mb-3">
+                        <label for="audio-file" class="form-label">Audio File</label>
+                        <input type="file" class="form-control" id="audio-file" name="audio_file" accept="audio/*">
+                        <div class="form-text">Upload an audio file (MP3, WAV, OGG)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="track-file-path" class="form-label">OR Enter File URL</label>
+                        <input type="text" class="form-control" id="track-file-path" name="file_path" placeholder="https://example.com/track.mp3">
+                        <div class="form-text">Either upload a file or enter a URL</div>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="track-is-premium" name="is_premium">
+                        <label class="form-check-label" for="track-is-premium">
+                            Premium Track
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Track</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

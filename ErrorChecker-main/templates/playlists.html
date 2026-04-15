@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Your Playlists - Surtaal{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1>Your Playlists</h1>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createPlaylistModal">
+            <i class="fas fa-plus me-1"></i> Create Playlist
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    {% if playlists %}
+        {% for playlist in playlists %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3" style="width: 60px; height: 60px; background-color: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-list fa-2x text-muted"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0">{{ playlist.name }}</h5>
+                            <p class="card-text text-muted">{{ playlist.tracks.count() }} tracks</p>
+                        </div>
+                    </div>
+                    <p class="card-text text-muted mb-3">
+                        Created on {{ playlist.created_at.strftime('%B %d, %Y') }}
+                    </p>
+                    <div class="mt-auto text-center">
+                        <a href="{{ url_for('view_playlist', playlist_id=playlist.id) }}" class="btn btn-primary">
+                            <i class="fas fa-play me-1"></i> Open Playlist
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">
+                        <i class="fas fa-music text-muted"></i>
+                    </div>
+                    <h3>No Playlists Yet</h3>
+                    <p class="text-muted">Create your first playlist to start organizing your music</p>
+                    <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#createPlaylistModal">
+                        <i class="fas fa-plus me-1"></i> Create Playlist
+                    </button>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Create Playlist Modal -->
+<div class="modal fade" id="createPlaylistModal" tabindex="-1" aria-labelledby="createPlaylistModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createPlaylistModalLabel">Create New Playlist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="create-playlist-form" method="POST" action="{{ url_for('playlists') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="playlist-name" class="form-label">Playlist Name</label>
+                        <input type="text" class="form-control" id="playlist-name" name="name" placeholder="My Awesome Playlist" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Playlist</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

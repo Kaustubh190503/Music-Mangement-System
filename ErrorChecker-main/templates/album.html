@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ album.title }} - Surtaal{% endblock %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-md-3">
+        <div class="album-cover" style="width: 200px; height: 200px; margin: 0 auto;">
+            {% if album.cover_url %}
+            <img src="{{ album.cover_url }}" alt="{{ album.title }}" class="img-fluid rounded">
+            {% else %}
+            <div style="width: 200px; height: 200px; background-color: #333; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-record-vinyl fa-5x text-muted"></i>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-9">
+        <h1 class="mb-2">{{ album.title }}</h1>
+        <h3 class="text-muted">
+            <a href="{{ url_for('view_artist', artist_id=album.artist.id) }}" class="text-decoration-none">
+                {{ album.artist.name }}
+            </a>
+        </h3>
+        {% if album.release_date %}
+        <p class="text-muted">Released: {{ album.release_date.strftime('%B %d, %Y') }}</p>
+        {% endif %}
+        <div class="mb-3">
+            <span class="badge bg-secondary">{{ tracks|length }} Tracks</span>
+        </div>
+        {% if tracks %}
+        <button class="btn btn-primary mt-2" id="play-all-btn">
+            <i class="fas fa-play me-1"></i> Play Album
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+            {% if tracks %}
+                {% for track in tracks %}
+                <div class="track-item list-group-item d-flex align-items-center {% if track.is_premium %}premium{% endif %}" data-id="{{ track.id }}">
+                    <div class="track-number">{{ loop.index }}</div>
+                    <div class="track-info">
+                        <div class="track-title">{{ track.title }}</div>
+                        <div class="track-artist">{{ track.artist.name }}</div>
+                    </div>
+                    <div class="track-duration" data-duration="{{ track.duration }}">
+                        {{ (track.duration // 60)|int }}:{{ '%02d' % (track.duration % 60) }}
+                    </div>
+                    <div class="track-actions">
+                        <button class="btn btn-sm btn-link favorite-button" data-id="{{ track.id }}">
+                            {% if current_user.is_authenticated and track in current_user.favorites.all() %}
+                            <i class="fas fa-heart"></i>
+                            {% else %}
+                            <i class="far fa-heart"></i>
+                            {% endif %}
+                        </button>
+                        
+                        {% if current_user.is_authenticated %}
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-link add-to-playlist" data-id="{{ track.id }}">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <div class="playlist-dropdown dropdown-menu dropdown-menu-end" data-track="{{ track.id }}">
+                                <h6 class="dropdown-header">Add to playlist</h6>
+                                {% if current_user.playlists.all() %}
+                                    {% for playlist in current_user.playlists %}
+                                    <a class="dropdown-item playlist-dropdown-item" href="#" data-playlist="{{ playlist.id }}">
+                                        {{ playlist.name }}
+                                    </a>
+                                    {% endfor %}
+                                {% else %}
+                                    <a class="dropdown-item disabled" href="#">No playlists available</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="{{ url_for('playlists') }}">Create Playlist</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="list-group-item text-center py-5">
+                    <p class="mb-0">No tracks available for this album</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if tracks %}
+<script src="{{ url_for('static', filename='js/player.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Play all tracks in album
+        const playAllBtn = document.getElementById('play-all-btn');
+        if (playAllBtn) {
+            playAllBtn.addEventListener('click', function() {
+                const trackItems = document.querySelectorAll('.track-item');
+                const trackIds = Array.from(trackItems).map(el => parseInt(el.dataset.id));
+                
+                if (trackIds.length > 0 && window.player) {
+                    window.player.setPlaylist(trackIds, 0);
+                }
+            });
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}
